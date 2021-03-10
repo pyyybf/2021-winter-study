@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Form, Row, Col, Input, Button} from 'antd';
+import {Form, Row, Col, Input, Button, Popconfirm} from 'antd';
 import {DownOutlined, UpOutlined} from '@ant-design/icons';
 
 const AdvancedSearchForm = (props) => {
@@ -16,14 +16,8 @@ const AdvancedSearchForm = (props) => {
           <Form.Item
             name={props.fields[i]["key"]}
             label={props.fields[i]["title"]}
-            rules={[
-              {
-                required: false,
-                message: 'Input something!',
-              },
-            ]}
           >
-            <Input placeholder="placeholder"/>
+            <Input placeholder={"请输入" + props.fields[i]["title"]} allowClear/>
           </Form.Item>
         </Col>,
       );
@@ -34,6 +28,7 @@ const AdvancedSearchForm = (props) => {
 
   const onFinish = (values) => {
     console.log('Received values of form: ', values);
+    props.onSearch(values);
   };
 
   return (
@@ -54,16 +49,19 @@ const AdvancedSearchForm = (props) => {
           <Button type="primary" htmlType="submit">
             Search
           </Button>
-          <Button
-            style={{
-              margin: '0 8px',
-            }}
-            onClick={() => {
-              form.resetFields();
-            }}
-          >
-            Clear
-          </Button>
+          <Popconfirm title="Sure to clear?"
+                      onConfirm={() => {
+                        form.resetFields();
+                        props.onClear();
+                      }}>
+            <Button
+              style={{
+                margin: '0 8px',
+              }}
+            >
+              Clear
+            </Button>
+          </Popconfirm>
           <a
             style={{
               fontSize: 12,
