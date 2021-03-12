@@ -56,7 +56,7 @@ export default class SearchTable extends React.Component {
   handleEdit = (newItem) => {
     let allDataSource = [...this.state.allDataSource];
     let index = allDataSource.findIndex(({key}) => key === newItem["key"]);
-    index > -1 && (allDataSource[index] = newItem);
+    index > -1 && (allDataSource.splice(index, 1, newItem));
     this.setState({
       allDataSource: allDataSource,
     });

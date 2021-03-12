@@ -16,16 +16,17 @@ const EditableRow = ({index, ...props}) => {
 
 const EditableCell = ({
                         title,
-                        editable,
-                        children,
                         dataIndex,
+                        editable,
                         record,
+                        children,
                         handleSave,
                         ...restProps
                       }) => {
   const [editing, setEditing] = useState(false);
   const inputRef = useRef(null);
   const form = useContext(EditableContext);
+
   useEffect(() => {
     if (editing) {
       inputRef.current.focus();
@@ -40,13 +41,9 @@ const EditableCell = ({
   };
 
   const save = async () => {
-    try {
-      const values = await form.validateFields();
-      toggleEdit();
-      handleSave({...record, ...values});
-    } catch (errInfo) {
-      console.log('Save failed:', errInfo);
-    }
+    const values = await form.validateFields();
+    toggleEdit();
+    handleSave({...record, ...values});
   };
 
   let childNode = children;
@@ -69,7 +66,6 @@ const EditableCell = ({
       </Form.Item>
     ) : (
       <div
-        className="editable-cell-value-wrap"
         style={{
           paddingRight: 24,
         }}
@@ -91,12 +87,12 @@ export default class EditableTable extends React.Component {
       title: '操作',
       dataIndex: 'action',
       key: 'action',
-      render: (_, record) =>
+      render: (record) =>
         <Popconfirm title="Sure to delete?"
                     onConfirm={() => {
                       this.handleDelete(record.key);
                     }}>
-          <Button danger>删除</Button>
+          <Button danger>Delete</Button>
         </Popconfirm>
     });
   }
