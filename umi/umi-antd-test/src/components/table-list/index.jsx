@@ -87,7 +87,7 @@ export default class EditableTable extends React.Component {
       title: '操作',
       dataIndex: 'action',
       key: 'action',
-      render: (record) =>
+      render: (_, record) =>
         <Popconfirm title="Sure to delete?"
                     onConfirm={() => {
                       this.handleDelete(record.key);

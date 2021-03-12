@@ -27,7 +27,7 @@ const AdvancedSearchForm = (props) => {
   };
 
   const onFinish = (values) => {
-    console.log('Received values of form: ', values);
+    // console.log('Received values of form: ', values);
     props.onSearch(values);
   };
 
