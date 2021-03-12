@@ -14,13 +14,13 @@ export default class SearchTable extends React.Component {
     };
   }
 
-  loadingWarp = (fn, info) => {
-    return new Promise((resolve) => {
+  loadingWarp = (fn) => {
+    let promise = new Promise((resolve) => {
       this.setState({
         loading: true,
       });
       let res = fn();
-      resolve(fn);
+      setTimeout(resolve, 1000);
     }).finally(() => {
       this.setState({
         loading: false,
@@ -29,11 +29,14 @@ export default class SearchTable extends React.Component {
   }
 
   searchInit = (searchInfo) => {
-    this.loadingWarp(this.handleSearch(searchInfo));
+    this.setState({
+      searchInfo: searchInfo,
+    })
+    this.loadingWarp(this.handleSearch);
   }
 
-  handleSearch = (searchInfo) => {
-    let {name: searchName, age: searchAge, address: searchAddress, sex: searchSex} = searchInfo;
+  handleSearch = () => {
+    let {name: searchName, age: searchAge, address: searchAddress, sex: searchSex} = this.state.searchInfo;
     let filterRes = this.state.allDataSource.filter(
       ({name, age, address, sex}) => {
         return (!searchName || name.includes(searchName)) && (!searchAge || age == searchAge) && (!searchAddress || address.includes(searchAddress)) && (!searchSex || sex === searchSex)
@@ -46,40 +49,31 @@ export default class SearchTable extends React.Component {
   handleClear = () => {
     this.setState({
       dataSource: this.state.allDataSource,
+      searchInfo: [],
     });
   }
 
   handleEdit = (newItem) => {
-    let tmpDataSource = [...this.state.dataSource];
-    let index = tmpDataSource.findIndex(({key}) => key === newItem["key"]);
-    if (index > -1) {
-      tmpDataSource[index] = newItem;
-    }
-    let tmpAllDataSource = [...this.state.allDataSource];
-    index = tmpAllDataSource.findIndex(({key}) => key === newItem["key"]);
-    if (index > -1) {
-      tmpAllDataSource[newItem["key"]] = newItem;
-    }
+    let allDataSource = [...this.state.allDataSource];
+    let index = allDataSource.findIndex(({key}) => key === newItem["key"]);
+    index > -1 && (allDataSource[index] = newItem);
     this.setState({
-      dataSource: tmpDataSource,
-      allDataSource: tmpAllDataSource,
+      allDataSource: allDataSource,
     });
+    this.handleSearch();
   }
 
   handleDelete = (delKey) => {
-    let tmpDataSource = [...this.state.dataSource];
-    let index = tmpDataSource.findIndex(({key}) => key === delKey);
-    if (index > -1) {
-      tmpDataSource.splice(index, 1);
-    }
-    let tmpAllDataSource = [...this.state.allDataSource];
-    index = tmpAllDataSource.findIndex(({key}) => key === delKey);
-    if (index > -1) {
-      tmpAllDataSource.splice(index, 1);
-    }
+    // ???跟编辑不一样
+    let dataSource = [...this.state.dataSource];
+    let index = dataSource.findIndex(({key}) => key === delKey);
+    index > -1 && (dataSource.splice(index, 1));
+    let allDataSource = [...this.state.allDataSource];
+    index = allDataSource.findIndex(({key}) => key === delKey);
+    index > -1 && (allDataSource.splice(index, 1));
     this.setState({
-      dataSource: tmpDataSource,
-      allDataSource: tmpAllDataSource,
+      dataSource: dataSource,
+      allDataSource: allDataSource,
     });
   }
 
@@ -87,7 +81,7 @@ export default class SearchTable extends React.Component {
     return (<>
       <Search
         fields={this.props.columns}
-        onSearch={this.handleSearch}
+        onSearch={this.searchInit}
         onClear={this.handleClear}
       />
       <br/>

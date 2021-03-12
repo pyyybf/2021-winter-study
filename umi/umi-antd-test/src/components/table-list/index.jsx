@@ -1,5 +1,5 @@
 import React, {useContext, useState, useEffect, useRef} from 'react';
-import {Table, Input, Button, Form} from 'antd';
+import {Table, Input, Button, Form, Popconfirm} from 'antd';
 
 const EditableContext = React.createContext(null);
 
@@ -91,7 +91,13 @@ export default class EditableTable extends React.Component {
       title: '操作',
       dataIndex: 'action',
       key: 'action',
-      render: (_, record) => <Button danger onClick={() => this.handleDelete(record.key)}>删除</Button>
+      render: (_, record) =>
+        <Popconfirm title="Sure to delete?"
+                    onConfirm={() => {
+                      this.handleDelete(record.key);
+                    }}>
+          <Button danger>删除</Button>
+        </Popconfirm>
     });
   }
 
@@ -135,6 +141,7 @@ export default class EditableTable extends React.Component {
         components={components}
         rowClassName={() => 'editable-row'}
         dataSource={this.props.dataSource}
+        loading={this.props.loading}
         columns={columns}
       />
     );
