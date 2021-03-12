@@ -8,67 +8,90 @@ export default class SearchTable extends React.Component {
     super(props);
     this.state = {
       dataSource: this.props.dataSource,
+      searchInfo: [],
       loading: false,
+      allDataSource: this.props.dataSource,
     };
-    this.handleSearch = this.handleSearch.bind(this);
-    this.handleClear = this.handleClear.bind(this);
-    this.startLoading = this.startLoading.bind(this);
-    this.endLoading = this.endLoading.bind(this);
   }
 
-  handleSearch(searchInfo) {
-    //console.log(this.state)
-    this.startLoading();
-    var dataSource = [];
-    var flag = true;
-    var searchKeys = Object.keys(searchInfo);
-    for (var i = 0; i < this.props.dataSource.length; i++) {
-      flag = true;
-      for (var j = 0; j < searchKeys.length; j++) {
-        if (searchInfo[searchKeys[j]] && this.props.dataSource[i][searchKeys[j]].toString().indexOf(searchInfo[searchKeys[j]]) == -1) {
-          flag = false;
-          break;
-        }
-      }
-      if (flag) {
-        dataSource.push(this.props.dataSource[i]);
-      }
-    }
+  loadingWarp = (fn) => {
+    let promise = new Promise((resolve) => {
+      this.setState({
+        loading: true,
+      });
+      let res = fn();
+      setTimeout(resolve, 1000);
+    }).finally(() => {
+      this.setState({
+        loading: false,
+      })
+    });
+  }
+
+  searchInit = (searchInfo) => {
+    this.setState({
+      searchInfo: searchInfo,
+    })
+    this.loadingWarp(this.handleSearch);
+  }
+
+  handleSearch = () => {
+    let {name: searchName, age: searchAge, address: searchAddress, sex: searchSex} = this.state.searchInfo;
+    let filterRes = this.state.allDataSource.filter(
+      ({name, age, address, sex}) => {
+        return (!searchName || name.includes(searchName)) && (!searchAge || age == searchAge) && (!searchAddress || address.includes(searchAddress)) && (!searchSex || sex === searchSex)
+      });
+    this.setState({
+      dataSource: filterRes,
+    });
+  }
+
+  handleClear = () => {
+    this.setState({
+      dataSource: this.state.allDataSource,
+      searchInfo: [],
+    });
+  }
+
+  handleEdit = (newItem) => {
+    let allDataSource = [...this.state.allDataSource];
+    let index = allDataSource.findIndex(({key}) => key === newItem["key"]);
+    index > -1 && (allDataSource.splice(index, 1, newItem));
+    this.setState({
+      allDataSource: allDataSource,
+    });
+    this.handleSearch();
+  }
+
+  handleDelete = (delKey) => {
+    // ???跟编辑不一样
+    let dataSource = [...this.state.dataSource];
+    let index = dataSource.findIndex(({key}) => key === delKey);
+    index > -1 && (dataSource.splice(index, 1));
+    let allDataSource = [...this.state.allDataSource];
+    index = allDataSource.findIndex(({key}) => key === delKey);
+    index > -1 && (allDataSource.splice(index, 1));
     this.setState({
       dataSource: dataSource,
-    });
-    this.endLoading();
-  }
-
-  startLoading() {
-    //console.log('start loading')
-    this.setState({
-      loading: true,
-    });
-  }
-
-  endLoading() {
-    this.setState({
-      loading: false,
-    });
-    //console.log('end loading')
-  }
-
-  handleClear() {
-    this.setState({
-      dataSource: this.props.dataSource,
+      allDataSource: allDataSource,
     });
   }
 
   render() {
     return (<>
-      <Search fields={this.props.columns} onSearch={this.handleSearch} onClear={this.handleClear}/>
-      <Spin spinning={this.state.loading}>
-        <TableList
-          dataSource={this.state.dataSource}
-          columns={this.props.columns}
-        />
-      </Spin>
+      <Search
+        fields={this.props.columns}
+        onSearch={this.searchInit}
+        onClear={this.handleClear}
+      />
+      <br/>
+      <TableList
+        dataSource={this.state.dataSource}
+        columns={this.props.columns}
+        loading={this.state.loading}
+        onEdit={this.handleEdit}
+        onDelete={this.handleDelete}
+      />
     </>);
   }
 }
